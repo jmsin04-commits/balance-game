@@ -1,9 +1,8 @@
 # 밸런스 게임
 
-둘 중 하나를 고르면 다른 사람들의 선택 비율을 실시간으로 보여주는 웹 게임입니다.
-
-- 화면: GitHub Pages (무료, 24시간, 노트북 꺼져도 동작)
-- 투표 집계: Supabase (무료 DB)
+둘 중 하나를 고르고, 마지막에 내 선택을 모아서 보여주는 웹 게임입니다.
+서버/DB 없이 정적 파일만으로 동작해서 GitHub Pages에 무료로 올릴 수 있습니다
+(24시간, 노트북 꺼져도, 와이파이·LTE 어디서든 접속 가능).
 
 ## 파일
 
@@ -11,21 +10,8 @@
 | --- | --- |
 | `index.html`, `style.css`, `app.js` | 게임 화면 |
 | `questions.js` | 질문 목록 — 여기만 고치면 질문 추가/수정 |
-| `config.js` | Supabase 주소/키 |
-| `supabase-setup.sql` | Supabase에 한 번 실행할 DB 설정 |
 
-## 1. Supabase 설정 (투표 집계용, 한 번만)
-
-1. https://supabase.com 가입 → **New project** 생성 (Region은 Seoul 추천)
-2. 왼쪽 메뉴 **SQL Editor** → `supabase-setup.sql` 내용을 붙여넣고 **Run**
-3. **Project Settings → API** 에서 두 값을 복사해 `config.js`에 붙여넣기
-   - Project URL → `SUPABASE_URL`
-   - `anon` / `publishable` 키 → `SUPABASE_KEY`
-   - ⚠️ `service_role` / `secret` 키는 절대 넣지 마세요
-
-`config.js`가 비어 있으면 "데모 모드"로 동작합니다 (내 브라우저 안에서만 집계).
-
-## 2. GitHub에 올리기
+## 1. GitHub에 올리기
 
 1. https://github.com/new 에서 새 저장소 생성 (예: `balance-game`, **Public**, README 추가하지 않기)
 2. 이 폴더에서:
@@ -38,7 +24,7 @@
    비밀번호를 물으면 GitHub 비밀번호 대신 **Personal Access Token**을 입력합니다
    (GitHub → Settings → Developer settings → Personal access tokens).
 
-## 3. GitHub Pages 켜기
+## 2. GitHub Pages 켜기
 
 저장소 → **Settings → Pages** → Source: **Deploy from a branch** → Branch: `main` / `/ (root)` → **Save**
 
@@ -64,6 +50,4 @@ python3 -m http.server 8000
 
 ## 참고
 
-- 같은 브라우저에서는 질문마다 한 번만 집계됩니다. 다시 플레이하면 예전에 고른 답과 현재 비율을 보여줍니다.
-- 질문의 `id`는 집계 기준이라 바꾸면 안 됩니다. 새 질문은 새 `id`(0~999)로 추가하세요.
-- 투표 수 초기화: Supabase SQL Editor에서 `truncate public.balance_votes;`
+- 질문 추가/수정은 `questions.js`만 고치면 됩니다.

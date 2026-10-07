@@ -56,6 +56,7 @@ body {
 .screen { text-align: center; }
 .lead { font-size: 1.75rem; font-weight: 700; margin: 48px 0 8px; letter-spacing: -0.02em; }
 .sub { color: var(--muted); margin: 0 0 32px; }
+.note { color: var(--muted); font-size: 0.85rem; margin-top: 24px; }
 
 .primary {
   font: inherit;
@@ -73,6 +74,8 @@ body {
 .vs { font-weight: 800; color: var(--muted); font-size: 0.9rem; }
 
 .choice {
+  position: relative;
+  overflow: hidden;
   font: inherit;
   color: var(--text);
   background: var(--surface);
@@ -93,33 +96,33 @@ body {
 .choice.b:not(:disabled):hover { border-color: var(--b); }
 .choice:disabled { cursor: default; }
 
-.choice .label { font-size: 1.2rem; font-weight: 600; word-break: keep-all; }
-.choice.picked.a { border-color: var(--a); background: var(--a-soft); }
-.choice.picked.b { border-color: var(--b); background: var(--b-soft); }
-.choice:disabled:not(.picked) { opacity: 0.45; }
-
-#next-btn { margin-top: 24px; }
-
-.summary {
-  text-align: left;
-  margin: 0 0 32px;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.choice .label { position: relative; z-index: 1; font-size: 1.2rem; font-weight: 600; word-break: keep-all; }
+.choice .result {
+  position: relative;
+  z-index: 1;
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  min-height: 1.5em;
 }
-.summary li {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
+
+/* 결과 막대: 버튼 배경을 왼쪽부터 채움 */
+.choice .bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  transition: width 0.7s cubic-bezier(.2,.8,.2,1);
 }
-.summary strong.a { color: var(--a); }
-.summary strong.b { color: var(--b); }
-.summary span { color: var(--muted); font-size: 0.9rem; }
+.choice.a .bar { background: var(--a-soft); }
+.choice.b .bar { background: var(--b-soft); }
+
+.choice.picked.a { border-color: var(--a); }
+.choice.picked.b { border-color: var(--b); }
+.choice.picked .result { font-weight: 700; }
+.choice.picked.a .result { color: var(--a); }
+.choice.picked.b .result { color: var(--b); }
+
+.status { color: var(--muted); min-height: 1.5em; margin: 20px 0; }
 
 @media (min-width: 560px) {
   .choices { flex-direction: row; align-items: center; }

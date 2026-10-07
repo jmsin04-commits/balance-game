@@ -291,6 +291,7 @@
     (() => {
       const { SUPABASE_URL, SUPABASE_KEY } = window.BALANCE_CONFIG || {};
       const QUESTIONS = window.BALANCE_QUESTIONS || [];
+      const ROUND_SIZE = 10; // 한 판에 나오는 문항 수 (전체 질문 중 무작위로 뽑음)
       const ONLINE = Boolean(SUPABASE_URL && SUPABASE_KEY);
       const API = ONLINE ? SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1" : "";
 
@@ -367,7 +368,7 @@
       }
 
       function start() {
-        order = shuffle(QUESTIONS);
+        order = shuffle(QUESTIONS).slice(0, ROUND_SIZE);
         index = 0;
         majorityCount = 0;
         renderQuestion();

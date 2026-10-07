@@ -7,23 +7,22 @@
 
 ## 파일
 
-| 파일 | 내용 |
-| --- | --- |
-| `index.html`, `style.css`, `app.js` | 게임 화면 |
-| `questions.js` | 질문 목록 — 여기만 고치면 질문 추가/수정 |
-| `config.js` | Supabase 주소/키 |
-| `supabase-setup.sql` | Supabase에 한 번 실행할 DB 설정 |
+게임 전체(화면, 디자인, 질문, Supabase 설정, 동작 코드)가 `index.html` 한 파일에 들어 있습니다.
+
+- 질문 수정: `index.html`에서 `window.BALANCE_QUESTIONS` 부분
+- Supabase 주소/키: `index.html`에서 `window.BALANCE_CONFIG` 부분
+- `supabase-setup.sql`: Supabase에 한 번 실행할 DB 설정 (사이트에는 필요 없음)
 
 ## 1. Supabase 설정 (투표 집계용, 한 번만)
 
 1. https://supabase.com 가입 → **New project** 생성 (Region은 Seoul 추천)
 2. 왼쪽 메뉴 **SQL Editor** → `supabase-setup.sql` 내용을 붙여넣고 **Run**
-3. **Project Settings → API** 에서 두 값을 복사해 `config.js`에 붙여넣기
+3. **Project Settings → API** 에서 두 값을 복사해 `index.html`의 `BALANCE_CONFIG`에 붙여넣기
    - Project URL → `SUPABASE_URL`
    - `anon` / `publishable` 키 → `SUPABASE_KEY`
    - ⚠️ `service_role` / `secret` 키는 절대 넣지 마세요
 
-`config.js`가 비어 있으면 "데모 모드"로 동작합니다 (내 브라우저 안에서만 집계).
+`BALANCE_CONFIG`가 비어 있으면 "데모 모드"로 동작합니다 (내 브라우저 안에서만 집계).
 
 ## 2. GitHub에 올리기
 

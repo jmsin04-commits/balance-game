@@ -7,7 +7,206 @@
   <meta name="theme-color" content="#141416" media="(prefers-color-scheme: dark)">
   <title>밸런스 게임</title>
   <meta name="description" content="둘 중 하나만 고른다면? 다른 사람들의 선택 비율을 실시간으로 확인해보세요.">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --bg: #f6f5f2;
+      --surface: #ffffff;
+      --text: #1d1d1f;
+      --muted: #6b6b70;
+      --line: #e2e0db;
+      --a: #e5484d;
+      --a-soft: #fde8e8;
+      --b: #3e63dd;
+      --b-soft: #e6ecfd;
+      --accent: #1d1d1f;
+      --accent-text: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141416;
+        --surface: #1e1e21;
+        --text: #f2f2f3;
+        --muted: #a0a0a6;
+        --line: #2e2e33;
+        --a: #f2555a;
+        --a-soft: #3a1d1f;
+        --b: #5b7ff0;
+        --b-soft: #1c2440;
+        --accent: #f2f2f3;
+        --accent-text: #141416;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html, body { margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
+        "Malgun Gothic", "Noto Sans KR", sans-serif;
+      line-height: 1.5;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* 화면 전체 높이를 꽉 채우는 세로 레이아웃 (주소창 높이 변화까지 반영: dvh) */
+    .wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding:
+        max(16px, env(safe-area-inset-top))
+        max(16px, env(safe-area-inset-right))
+        max(16px, env(safe-area-inset-bottom))
+        max(16px, env(safe-area-inset-left));
+    }
+
+    .top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .top h1 { font-size: 1.1rem; margin: 0; letter-spacing: -0.01em; }
+    .progress { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    .screen { flex: 1; display: flex; flex-direction: column; text-align: center; }
+    #start, #end { justify-content: center; padding-bottom: 10vh; }
+    .lead { font-size: 1.75rem; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.02em; word-break: keep-all; }
+    .sub { color: var(--muted); margin: 0 0 32px; word-break: keep-all; }
+    .note { color: var(--muted); font-size: 0.85rem; margin-top: 20px; word-break: keep-all; }
+
+    .primary {
+      font: inherit;
+      font-size: 1.05rem;
+      font-weight: 600;
+      background: var(--accent);
+      color: var(--accent-text);
+      border: 0;
+      border-radius: 14px;
+      padding: 16px 28px;
+      width: 100%;
+      max-width: 360px;
+      align-self: center;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .primary:active { opacity: 0.8; }
+    .primary:focus-visible, .choice:focus-visible { outline: 3px solid var(--b); outline-offset: 3px; }
+
+    /* 선택지 두 개가 남은 높이를 반씩 나눠 가짐 */
+    .choices {
+      position: relative;
+      flex: 1;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .vs {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+      border: 2px solid var(--line);
+      font-weight: 800;
+      font-size: 0.8rem;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .choice {
+      position: relative;
+      overflow: hidden;
+      flex: 1;
+      min-height: 0;
+      font: inherit;
+      color: var(--text);
+      background: var(--surface);
+      border: 2px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: border-color 0.15s, transform 0.1s;
+    }
+    .choice:not(:disabled):active { transform: scale(0.98); }
+    @media (hover: hover) {
+      .choice:not(:disabled):hover { transform: translateY(-2px); }
+      .choice.a:not(:disabled):hover { border-color: var(--a); }
+      .choice.b:not(:disabled):hover { border-color: var(--b); }
+    }
+    .choice:disabled { cursor: default; }
+
+    .choice .label {
+      position: relative;
+      z-index: 1;
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.35;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+    .choice .result {
+      position: relative;
+      z-index: 1;
+      font-size: 1rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      min-height: 1.5em;
+    }
+
+    /* 결과 막대: 버튼 배경을 왼쪽부터 채움 */
+    .choice .bar {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0;
+      transition: width 0.7s cubic-bezier(.2,.8,.2,1);
+    }
+    .choice.a .bar { background: var(--a-soft); }
+    .choice.b .bar { background: var(--b-soft); }
+
+    .choice.picked.a { border-color: var(--a); }
+    .choice.picked.b { border-color: var(--b); }
+    .choice.picked .result { font-weight: 700; font-size: 1.15rem; }
+    .choice.picked.a .result { color: var(--a); }
+    .choice.picked.b .result { color: var(--b); }
+
+    /* 아래쪽 고정 영역: 높이를 미리 잡아둬서 결과가 떠도 선택지 크기가 안 바뀜 */
+    .actions {
+      min-height: 112px;
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    .status { color: var(--muted); min-height: 1.5em; margin: 0 0 12px; word-break: keep-all; }
+
+    /* 태블릿/PC: 좌우 배치 */
+    @media (min-width: 560px) {
+      .wrap { padding-top: 32px; }
+      .choices { flex: 0 0 auto; flex-direction: row; height: min(55vh, 360px); }
+      .lead { font-size: 2rem; }
+    }
+  </style>
 </head>
 <body>
   <main class="wrap">
@@ -53,8 +252,217 @@
     </section>
   </main>
 
-  <script src="config.js"></script>
-  <script src="questions.js"></script>
-  <script src="app.js"></script>
+  <script>
+    // Supabase 프로젝트 정보 (Supabase 대시보드 → Project Settings → API 에서 복사)
+    // 비워두면 "데모 모드"로 동작합니다: 이 브라우저 안에서만 집계됩니다.
+    // publishable(anon) 키는 브라우저에 공개되도록 설계된 키라서 GitHub에 올려도 괜찮습니다.
+    // (service_role / secret 키는 절대 넣지 마세요!)
+    window.BALANCE_CONFIG = {
+      SUPABASE_URL: "https://vexjzuiimmpdhcdbanpw.supabase.co",
+      SUPABASE_KEY: "sb_publishable_k44tv7c-rELF5SeGmSdSPw_AWQTw0dW",
+    };
+
+    // id는 투표 집계의 기준이므로 한 번 정한 질문의 id는 바꾸지 마세요.
+    // 새 질문은 겹치지 않는 새 id(0~999)로 추가하면 됩니다.
+    window.BALANCE_QUESTIONS = [
+      { id: 1,  a: "평생 여름만 살기", b: "평생 겨울만 살기" },
+      { id: 2,  a: "평생 라면 못 먹기", b: "평생 치킨 못 먹기" },
+      { id: 3,  a: "10년 전으로 돌아가기", b: "10년 후로 가보기" },
+      { id: 4,  a: "투명인간 되기", b: "하늘 날기" },
+      { id: 5,  a: "월 300 받고 칼퇴", b: "월 600 받고 매일 야근" },
+      { id: 6,  a: "말할 때마다 노래로 부르기", b: "걸을 때마다 춤추기" },
+      { id: 7,  a: "평생 핸드폰 없이 살기", b: "평생 친구 없이 살기" },
+      { id: 8,  a: "모든 언어 할 줄 알기", b: "모든 악기 연주하기" },
+      { id: 9,  a: "깻잎 떼어주는 애인", b: "새우 까주는 애인" },
+      { id: 10, a: "1년간 매일 아침 6시 기상", b: "1년간 매일 새벽 2시 취침" },
+      { id: 11, a: "평생 탕수육 부먹", b: "평생 탕수육 찍먹" },
+      { id: 21, a: "모든 영화 결말 스포 당하기", b: "모든 노래 1절만 듣기" },
+      { id: 13, a: "무인도에 혼자 1년", b: "싫어하는 사람과 한 방에서 1년" },
+      { id: 14, a: "와이파이 없는 5성급 호텔", b: "와이파이 빵빵한 찜질방" },
+      { id: 15, a: "로또 1등 1번", b: "평생 매달 300만원" },
+      { id: 16, a: "생각이 머리 위에 자막으로 뜨기", b: "모든 대화가 녹음되어 공개되기" },
+      { id: 17, a: "강아지랑 대화 가능", b: "고양이랑 대화 가능" },
+      { id: 18, a: "평생 민트초코만 먹기", b: "평생 하와이안 피자만 먹기" },
+      { id: 19, a: "잠 안 자도 안 피곤한 몸", b: "아무리 먹어도 살 안 찌는 몸" },
+      { id: 20, a: "순간이동 (하루 1번)", b: "시간 정지 (하루 10분)" },
+    ];
+  </script>
+  <script>
+    (() => {
+      const { SUPABASE_URL, SUPABASE_KEY } = window.BALANCE_CONFIG || {};
+      const QUESTIONS = window.BALANCE_QUESTIONS || [];
+      const ONLINE = Boolean(SUPABASE_URL && SUPABASE_KEY);
+      const API = ONLINE ? SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1" : "";
+
+      const $ = (id) => document.getElementById(id);
+      const screens = { start: $("start"), game: $("game"), end: $("end") };
+      const btnA = document.querySelector(".choice.a");
+      const btnB = document.querySelector(".choice.b");
+
+      // ---- 브라우저 저장소 (막혀 있어도 게임은 동작하도록 try/catch) ----
+      const store = {
+        get(key, fallback) {
+          try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+        },
+        set(key, value) {
+          try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+        },
+      };
+      // 이미 투표한 질문: { [questionId]: "a" | "b" } — 같은 사람이 같은 질문에 여러 번 투표하지 않게
+      const myPicks = store.get("balance.myPicks", {});
+
+      // ---- 집계 API ----
+      async function supabase(path, options = {}) {
+        const res = await fetch(API + path, {
+          ...options,
+          headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json", ...options.headers },
+        });
+        if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+        return res.json();
+      }
+
+      async function castVote(qid, pick) {
+        if (!ONLINE) {
+          const demo = store.get("balance.demoCounts", {});
+          const c = demo[qid] || { a: 0, b: 0 };
+          c[pick] += 1;
+          demo[qid] = c;
+          store.set("balance.demoCounts", demo);
+          return c;
+        }
+        const rows = await supabase("/rpc/cast_vote", {
+          method: "POST",
+          body: JSON.stringify({ qid, pick }),
+        });
+        const row = rows[0] || { out_a: 0, out_b: 0 };
+        return { a: Number(row.out_a), b: Number(row.out_b) };
+      }
+
+      async function getCounts(qid) {
+        if (!ONLINE) {
+          return store.get("balance.demoCounts", {})[qid] || { a: 0, b: 0 };
+        }
+        const rows = await supabase(`/balance_votes?question_id=eq.${qid}&select=a_count,b_count`);
+        const row = rows[0] || { a_count: 0, b_count: 0 };
+        return { a: Number(row.a_count), b: Number(row.b_count) };
+      }
+
+      // ---- 게임 진행 ----
+      let order = [];
+      let index = 0;
+      let majorityCount = 0; // 다수파를 고른 횟수
+
+      function shuffle(list) {
+        const arr = list.slice();
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function show(name) {
+        for (const [key, el] of Object.entries(screens)) el.hidden = key !== name;
+        $("progress").textContent = name === "game" ? `${index + 1} / ${order.length}` : "";
+      }
+
+      function start() {
+        order = shuffle(QUESTIONS);
+        index = 0;
+        majorityCount = 0;
+        renderQuestion();
+        show("game");
+      }
+
+      function resetChoice(btn) {
+        btn.disabled = false;
+        btn.classList.remove("picked");
+        btn.querySelector(".bar").style.width = "0";
+        btn.querySelector(".result").textContent = "";
+      }
+
+      function renderQuestion() {
+        const q = order[index];
+        $("label-a").textContent = q.a;
+        $("label-b").textContent = q.b;
+        resetChoice(btnA);
+        resetChoice(btnB);
+        $("status").textContent = "";
+        $("next-btn").hidden = true;
+        $("progress").textContent = `${index + 1} / ${order.length}`;
+      }
+
+      function showResult(pick, counts) {
+        const total = counts.a + counts.b;
+        const pctA = total ? Math.round((counts.a / total) * 100) : 0;
+        const pctB = total ? 100 - pctA : 0;
+
+        btnA.querySelector(".bar").style.width = pctA + "%";
+        btnB.querySelector(".bar").style.width = pctB + "%";
+        $("result-a").textContent = `${pctA}% · ${counts.a.toLocaleString()}명`;
+        $("result-b").textContent = `${pctB}% · ${counts.b.toLocaleString()}명`;
+        (pick === "a" ? btnA : btnB).classList.add("picked");
+
+        const mine = pick === "a" ? pctA : pctB;
+        if (mine > 50) majorityCount += 1;
+        $("status").textContent =
+          mine > 50 ? `${mine}%와 같은 선택! 다수파예요.`
+          : mine < 50 ? `${mine}%만 고른 선택. 소수파예요!`
+          : "정확히 반반이에요.";
+
+        $("next-btn").textContent = index === order.length - 1 ? "결과 보기 →" : "다음 질문 →";
+        $("next-btn").hidden = false;
+        $("next-btn").focus();
+      }
+
+      async function choose(pick) {
+        const q = order[index];
+        btnA.disabled = btnB.disabled = true;
+        $("status").textContent = "집계 중…";
+
+        try {
+          const already = myPicks[q.id];
+          let counts;
+          if (already) {
+            // 예전에 투표한 질문이면 다시 올리지 않고, 그때 고른 쪽으로 결과만 보여줌
+            counts = await getCounts(q.id);
+            pick = already;
+          } else {
+            counts = await castVote(q.id, pick);
+            myPicks[q.id] = pick;
+            store.set("balance.myPicks", myPicks);
+          }
+          showResult(pick, counts);
+          if (already) $("status").textContent += " (예전에 고른 답이에요)";
+        } catch (err) {
+          console.error(err);
+          btnA.disabled = btnB.disabled = false;
+          $("status").textContent = "집계 서버에 연결하지 못했어요. 잠시 후 다시 눌러주세요.";
+        }
+      }
+
+      function next() {
+        index += 1;
+        if (index < order.length) {
+          renderQuestion();
+        } else {
+          $("summary").textContent =
+            `${order.length}개 질문 중 ${majorityCount}개에서 다수파를 골랐어요.`;
+          show("end");
+        }
+      }
+
+      btnA.addEventListener("click", () => choose("a"));
+      btnB.addEventListener("click", () => choose("b"));
+      $("start-btn").addEventListener("click", start);
+      $("next-btn").addEventListener("click", next);
+      $("restart-btn").addEventListener("click", start);
+
+      if (!ONLINE) {
+        $("mode-note").textContent =
+          "데모 모드: Supabase 정보를 넣기 전까지는 이 브라우저 안에서만 집계돼요.";
+      }
+    })();
+  </script>
 </body>
 </html>

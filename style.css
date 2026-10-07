@@ -1,0 +1,130 @@
+:root {
+  --bg: #f6f5f2;
+  --surface: #ffffff;
+  --text: #1d1d1f;
+  --muted: #6b6b70;
+  --line: #e2e0db;
+  --a: #e5484d;
+  --a-soft: #fde8e8;
+  --b: #3e63dd;
+  --b-soft: #e6ecfd;
+  --accent: #1d1d1f;
+  --accent-text: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141416;
+    --surface: #1e1e21;
+    --text: #f2f2f3;
+    --muted: #a0a0a6;
+    --line: #2e2e33;
+    --a: #f2555a;
+    --a-soft: #3a1d1f;
+    --b: #5b7ff0;
+    --b-soft: #1c2440;
+    --accent: #f2f2f3;
+    --accent-text: #141416;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
+    "Malgun Gothic", "Noto Sans KR", sans-serif;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+.top h1 { font-size: 1.25rem; margin: 0; letter-spacing: -0.01em; }
+.progress { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.screen { text-align: center; }
+.lead { font-size: 1.75rem; font-weight: 700; margin: 48px 0 8px; letter-spacing: -0.02em; }
+.sub { color: var(--muted); margin: 0 0 32px; }
+.note { color: var(--muted); font-size: 0.85rem; margin-top: 24px; }
+
+.primary {
+  font: inherit;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-text);
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 28px;
+  cursor: pointer;
+}
+.primary:focus-visible, .choice:focus-visible { outline: 3px solid var(--b); outline-offset: 3px; }
+
+.choices { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+.vs { font-weight: 800; color: var(--muted); font-size: 0.9rem; }
+
+.choice {
+  position: relative;
+  overflow: hidden;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 28px 20px;
+  min-height: 120px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.choice:not(:disabled):hover { transform: translateY(-2px); }
+.choice.a:not(:disabled):hover { border-color: var(--a); }
+.choice.b:not(:disabled):hover { border-color: var(--b); }
+.choice:disabled { cursor: default; }
+
+.choice .label { position: relative; z-index: 1; font-size: 1.2rem; font-weight: 600; word-break: keep-all; }
+.choice .result {
+  position: relative;
+  z-index: 1;
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  min-height: 1.5em;
+}
+
+/* 결과 막대: 버튼 배경을 왼쪽부터 채움 */
+.choice .bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  transition: width 0.7s cubic-bezier(.2,.8,.2,1);
+}
+.choice.a .bar { background: var(--a-soft); }
+.choice.b .bar { background: var(--b-soft); }
+
+.choice.picked.a { border-color: var(--a); }
+.choice.picked.b { border-color: var(--b); }
+.choice.picked .result { font-weight: 700; }
+.choice.picked.a .result { color: var(--a); }
+.choice.picked.b .result { color: var(--b); }
+
+.status { color: var(--muted); min-height: 1.5em; margin: 20px 0; }
+
+@media (min-width: 560px) {
+  .choices { flex-direction: row; align-items: center; }
+  .choice { flex: 1; min-height: 200px; }
+}

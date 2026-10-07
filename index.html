@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>밸런스 게임</title>
+  <meta name="description" content="둘 중 하나만 고른다면? 다른 사람들의 선택 비율을 실시간으로 확인해보세요.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <h1>밸런스 게임</h1>
+      <span id="progress" class="progress"></span>
+    </header>
+
+    <!-- 시작 화면 -->
+    <section id="start" class="screen">
+      <p class="lead">둘 중 하나만 고른다면?</p>
+      <p class="sub">고르고 나면 다른 사람들이 뭘 골랐는지 바로 보여드려요.</p>
+      <button id="start-btn" class="primary">시작하기</button>
+      <p id="mode-note" class="note"></p>
+    </section>
+
+    <!-- 질문 화면 -->
+    <section id="game" class="screen" hidden>
+      <div class="choices">
+        <button class="choice a" data-pick="a">
+          <span class="label" id="label-a"></span>
+          <span class="bar" aria-hidden="true"></span>
+          <span class="result" id="result-a"></span>
+        </button>
+        <div class="vs">VS</div>
+        <button class="choice b" data-pick="b">
+          <span class="label" id="label-b"></span>
+          <span class="bar" aria-hidden="true"></span>
+          <span class="result" id="result-b"></span>
+        </button>
+      </div>
+      <p id="status" class="status" aria-live="polite"></p>
+      <button id="next-btn" class="primary" hidden>다음 질문 →</button>
+    </section>
+
+    <!-- 끝 화면 -->
+    <section id="end" class="screen" hidden>
+      <p class="lead">끝!</p>
+      <p id="summary" class="sub"></p>
+      <button id="restart-btn" class="primary">처음부터 다시</button>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
